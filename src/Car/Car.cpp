@@ -1,6 +1,16 @@
+#include <Arduino.h>
 #include <Wire.h>
 #include <Zumo32U4.h>
 #include "Car.h"
+
+void Car::setup() {
+    imu.setup();
+}
+
+void Car::update_sensors() {
+    imu.update();
+}
+
 
 bool Car::update() {
     switch (current_movement.action) {
@@ -21,7 +31,6 @@ bool Car::update() {
             break;
 
         case Action::FOLLOW_LINE:
-            /* code */
             break;
 
         default:
@@ -54,7 +63,6 @@ void Car::move_time() {
 }
 
 void Car::move_distance() {
-    /* code */
 }
 
 void Car::turn_degrees() {
@@ -64,17 +72,17 @@ void Car::turn_degrees() {
         move(turn_speed, -turn_speed);
     }
 
-    turn_sensor.update();
+    imu.gyro.update();
 
 
     if (current_movement.move_degrees > 0) {
-        if (turn_sensor.turn_angle >= current_movement.move_degrees) {
+        if (imu.gyro.turn_angle >= current_movement.move_degrees) {
             current_movement.action = Action::NO_ACTION;
 
             stop_movement();
         }
     } else {
-        if (turn_sensor.turn_angle <= current_movement.move_degrees) {
+        if (imu.gyro.turn_angle <= current_movement.move_degrees) {
             current_movement.action = Action::NO_ACTION;
 
             stop_movement();
@@ -93,15 +101,15 @@ void Car::turn_with_radius() {
         move(max_speed, (int)(max_speed*diff_r));
     }
 
-    turn_sensor.update();
+    imu.gyro.update();
     if (current_movement.move_degrees < 0) {
-        if (turn_sensor.turn_angle <= current_movement.move_degrees) {
+        if (imu.gyro.turn_angle <= current_movement.move_degrees) {
             current_movement.action = Action::NO_ACTION;
 
             stop_movement();
         }
     } else {
-        if (turn_sensor.turn_angle >= current_movement.move_degrees) {
+        if (imu.gyro.turn_angle >= current_movement.move_degrees) {
             current_movement.action = Action::NO_ACTION;
 
             stop_movement();
@@ -110,35 +118,33 @@ void Car::turn_with_radius() {
 }
 
 void Car::follow_line() {
-    /* code */
 }
 
 void Car::calibrate_line(bool line_is_black) {
-    /* code */
 }
 
-void Car::set_move(int16_t distance = 0, int16_t time = 0, bool drive_forward = true) {
-    if (distance) {
-        current_movement = {
-                .action = Action::MOVE_DISTANCE,
-                .time_initialized = millis(),
-                .move_forward = drive_forward,
-                .move_time = 0,
-                .move_distance = distance,
-                .move_degrees = 0,
-                .move_radius = 0
-        };
-    } else {
-        current_movement = {
-                .action = Action::MOVE_TIME,
-                .time_initialized = millis(),
-                .move_forward = drive_forward,
-                .move_time = time,
-                .move_distance = 0,
-                .move_degrees = 0,
-                .move_radius = 0
-        };
-    }
+void Car::set_move_time(int16_t time, bool drive_forward) {
+    current_movement = {
+            .action = Action::MOVE_TIME,
+            .time_initialized = millis(),
+            .move_forward = drive_forward,
+            .move_time = time,
+            .move_distance = 0,
+            .move_degrees = 0,
+            .move_radius = 0
+    };
+}
+
+void Car::set_move_distance(int16_t distance, bool drive_forward) {
+    current_movement = {
+            .action = Action::MOVE_DISTANCE,
+            .time_initialized = millis(),
+            .move_forward = drive_forward,
+            .move_time = 0,
+            .move_distance = distance,
+            .move_degrees = 0,
+            .move_radius = 0
+    };
 }
 
 void Car::set_turn_degrees(int32_t degrees) {
@@ -148,16 +154,16 @@ void Car::set_turn_degrees(int32_t degrees) {
             .move_forward = false,
             .move_time = 0,
             .move_distance = 0,
-            .move_degrees = degrees * turn_sensor.turn_1,
+            .move_degrees = degrees * imu.gyro.turn_1,
             .move_radius = 0,
     };
 
     if (!turn_sensor_setup) {
-        turn_sensor.setup();
+        imu.gyro.setup();
         turn_sensor_setup = true;
     }
 
-    turn_sensor.reset();
+    imu.gyro.reset();
 }
 
 void Car::set_turn_with_radius(int16_t radius, int32_t degrees) {
@@ -167,18 +173,17 @@ void Car::set_turn_with_radius(int16_t radius, int32_t degrees) {
             .move_forward = false,
             .move_time = 0,
             .move_distance = 0,
-            .move_degrees = degrees * turn_sensor.turn_1,
+            .move_degrees = degrees * imu.gyro.turn_1,
             .move_radius = radius,
     };
 
     if (!turn_sensor_setup) {
-        turn_sensor.setup();
+        imu.gyro.setup();
         turn_sensor_setup = true;
     }
 
-    turn_sensor.reset();
+    imu.gyro.reset();
 }
 
 void Car::set_follow_line(bool line_is_black) {
-    /* code */
 }

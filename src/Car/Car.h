@@ -2,8 +2,9 @@
 #define ZUMO_ROBOT_CAR_H
 
 #include <Arduino.h>
-#include "IMU/Accelerometer/Accelerometer.h"
-#include "IMU/Gyroscope/Gyroscope.h"
+#include <Wire.h>
+#include <Zumo32U4.h>
+#include "IMU/IMU.h"
 
 enum class Action {
     MOVE_TIME,
@@ -25,11 +26,15 @@ struct Movement {
 };
 
 class Movement_creator {
-
+    Movement set_move(int16_t distance = 0, int16_t time = 0, bool drive_forward = true);
+    Movement set_turn_degrees(int32_t degrees);
+    Movement set_turn_with_radius(int16_t radius, int32_t degrees);
+    Movement set_follow_line(bool line_is_black);
 };
 
 class Car {
 public:
+    IMU imu;
 
     Movement current_movement = {Action::NO_ACTION, 0, true, 0, 0, 0, 0};
     bool turn_sensor_setup = false;
@@ -42,10 +47,10 @@ public:
     int16_t correct_speed_left = 0;
     int16_t correct_speed_right = 0;
 
-    TurnSensor turn_sensor;
-
-
     Car() = default;
+    void setup();
+    void update_sensors();
+
     bool update();
     void stop_movement();
     void move(int16_t left_speed, int16_t right_speed);
@@ -55,7 +60,8 @@ public:
     void turn_with_radius();
     void follow_line();
     void calibrate_line(bool line_is_black);
-    void set_move(int16_t distance = 0, int16_t time = 0, bool drive_forward = true);
+    void set_move_time(int16_t time, bool drive_forward);
+    void set_move_distance(int16_t distance, bool drive_forward);
     void set_turn_degrees(int32_t degrees);
     void set_turn_with_radius(int16_t radius, int32_t degrees);
     void set_follow_line(bool line_is_black);

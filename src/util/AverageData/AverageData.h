@@ -1,0 +1,8 @@
+//
+// Created by emil on 05.11.2023.
+//
+
+#ifndef ZUMO_ROBOT_AVERAGEDATA_H
+#define ZUMO_ROBOT_AVERAGEDATA_H
+
+#endif //ZUMO_ROBOT_AVERAGEDATA_H
