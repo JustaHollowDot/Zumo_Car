@@ -11,7 +11,7 @@ void setup() {
 }
 
 void loop() {
-    car.update();
+    car.update_sensors();
     Serial.println("test");
     delay(1000);
 }

@@ -36,6 +36,7 @@ class Car {
 public:
     IMU imu;
 
+    // consider moving variables to motors
     Movement current_movement = {Action::NO_ACTION, 0, true, 0, 0, 0, 0};
     bool turn_sensor_setup = false;
     bool follow_line_setup = false;
@@ -52,6 +53,8 @@ public:
     void update_sensors();
 
     bool update();
+
+    // change to motors/movement
     void stop_movement();
     void move(int16_t left_speed, int16_t right_speed);
     void move_time();

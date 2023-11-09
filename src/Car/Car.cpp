@@ -7,12 +7,15 @@ void Car::setup() {
     imu.setup();
 }
 
+// add to car.update();
 void Car::update_sensors() {
     imu.update();
 }
 
 
+// change to return enum result to differentiate the different points of failure
 bool Car::update() {
+    // change to motors.update()
     switch (current_movement.action) {
         case Action::MOVE_TIME:
             move_time();

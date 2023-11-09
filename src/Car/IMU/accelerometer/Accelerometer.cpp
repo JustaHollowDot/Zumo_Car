@@ -22,9 +22,9 @@ void Accelerometer::update() {
 }
 
 void Accelerometer::get_acceleration() {
-    acceleration.x.add_data(imu_a.a.x);
-    acceleration.y.add_data(imu_a.a.y);
-    acceleration.z.add_data(imu_a.a.z);
+    acceleration.x = imu_a.a.x;
+    acceleration.y = imu_a.a.y;
+    acceleration.z = imu_a.a.z;
 }
 
 void Accelerometer::calculate_speed() {
