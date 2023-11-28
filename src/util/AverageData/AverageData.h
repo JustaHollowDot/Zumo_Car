@@ -5,14 +5,13 @@
 #include <Wire.h>
 #include <Zumo32U4.h>
 
-template<class T>
+template<class T, const uint16_t dataset_amount = 10>
 class AverageData {
 private:
     T val;
-    T dataset[10] = {};
+    T dataset[dataset_amount] = {};
     T sum = 0;
     uint16_t idx = 0;
-    uint16_t dataset_amount = 10;
     bool first_run = true;
 
     inline void set_val() {
@@ -102,11 +101,6 @@ public:
         sum = 0;
         idx = 0;
     }
-
-    void set_dataset_amount(uint8_t new_amount) {
-        dataset_amount = new_amount;
-    }
-
 };
 
 /*

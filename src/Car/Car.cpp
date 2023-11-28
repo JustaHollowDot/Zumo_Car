@@ -41,7 +41,7 @@ void Car::follow_line(bool force_setup) {
     constexpr float KD = 50 * KP;
     int16_t speed_difference = abs(KP * lineSensor.distance_from_center + KD * (lineSensor.distance_from_center - lineSensor.last_distance_from_center));
     int16_t inner_motor_speed = (int16_t)motors.max_speed - speed_difference;
-    int16_t outer_motor_speed = (int16_t)motors.max_speed;
+    auto  outer_motor_speed = (int16_t)motors.max_speed;
 
     int16_t turn_radius = (int16_t)(CAR_WIDTH / 2) * (outer_motor_speed + inner_motor_speed) / (outer_motor_speed - inner_motor_speed);
 
