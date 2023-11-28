@@ -4,189 +4,49 @@
 #include "Car.h"
 
 void Car::setup() {
+    lineSensor.init();
     imu.setup();
+    motors.setup();
 }
 
-// add to car.update();
-void Car::update_sensors() {
+void Car::update() {
+    lineSensor.update();
     imu.update();
+    motors.set_turn_angle(imu.gyro.turn_angle.z);
+    motors.update();
 }
 
+void Car::setup_line_follower() {
+    motors.set_movement(Movement_creator::turn_degrees(imu.gyro.turn_angle.z + 360));
 
-// change to return enum result to differentiate the different points of failure
-bool Car::update() {
-    // change to motors.update()
-    switch (current_movement.action) {
-        case Action::MOVE_TIME:
-            move_time();
-            break;
-
-        case Action::MOVE_DISTANCE:
-            move_distance();
-            break;
-
-        case Action::TURN_DEGREES:
-            turn_degrees();
-            break;
-
-        case Action::TURN_WITH_RADIUS:
-            turn_with_radius();
-            break;
-
-        case Action::FOLLOW_LINE:
-            break;
-
-        default:
-            stop_movement();
-
-            return true;
-    }
-
-    return false;
-}
-
-void Car::move(int16_t left_speed, int16_t right_speed) {
-    Zumo32U4Motors::setSpeeds(left_speed, right_speed);
-}
-
-void Car::stop_movement() {
-    move(0, 0);
-}
-
-void Car::move_time() {
-    if (current_movement.move_forward) {
-        move(max_speed, max_speed);
-    } else {
-        move(-max_speed, -max_speed);
-    }
-
-    if (current_movement.time_initialized < millis() - 1000) {
-        current_movement.action = Action::NO_ACTION;
+    while (motors.current_movement.action != Action::NO_ACTION) {
+        update();
+        lineSensor.calibrate_sensors();
     }
 }
 
-void Car::move_distance() {
-}
-
-void Car::turn_degrees() {
-    if (current_movement.move_degrees > 0) {
-        move(-turn_speed, turn_speed);
-    } else {
-        move(turn_speed, -turn_speed);
-    }
-
-    imu.gyro.update();
-
-
-    if (current_movement.move_degrees > 0) {
-        if (imu.gyro.turn_angle >= current_movement.move_degrees) {
-            current_movement.action = Action::NO_ACTION;
-
-            stop_movement();
+void Car::follow_line(bool force_setup) {
+    /*
+    if (force_setup or !lineSensor.check_if_initialized()) {
+        if (lineSensor.check_if_initialized()) {
+            lineSensor.reset();
         }
-    } else {
-        if (imu.gyro.turn_angle <= current_movement.move_degrees) {
-            current_movement.action = Action::NO_ACTION;
 
-            stop_movement();
-        }
+        setup_line_follower();
     }
+     */
+
+    constexpr float max_distance_from_center = 2000;
+    constexpr float KP = 400 / max_distance_from_center;
+    constexpr float KD = 50 * KP;
+    int16_t speed_difference = abs(KP * lineSensor.distance_from_center + KD * (lineSensor.distance_from_center - lineSensor.last_distance_from_center));
+    int16_t inner_motor_speed = (int16_t)motors.max_speed - speed_difference;
+    int16_t outer_motor_speed = (int16_t)motors.max_speed;
+
+    int16_t turn_radius = (int16_t)(CAR_WIDTH / 2) * (outer_motor_speed + inner_motor_speed) / (outer_motor_speed - inner_motor_speed);
+
+    Serial.println(turn_radius);
+
+    motors.set_movement(Movement_creator::turn_with_radius(turn_radius, imu.gyro.turn_angle.z + 360));
 }
 
-void Car::turn_with_radius() {
-    double radius_1 = current_movement.move_radius - 49;
-    double radius = current_movement.move_radius + 49;
-    double diff_r = radius / radius_1;
-
-    if (current_movement.move_degrees < 0) {
-        move((int)(max_speed*diff_r), max_speed);
-    } else {
-        move(max_speed, (int)(max_speed*diff_r));
-    }
-
-    imu.gyro.update();
-    if (current_movement.move_degrees < 0) {
-        if (imu.gyro.turn_angle <= current_movement.move_degrees) {
-            current_movement.action = Action::NO_ACTION;
-
-            stop_movement();
-        }
-    } else {
-        if (imu.gyro.turn_angle >= current_movement.move_degrees) {
-            current_movement.action = Action::NO_ACTION;
-
-            stop_movement();
-        }
-    }
-}
-
-void Car::follow_line() {
-}
-
-void Car::calibrate_line(bool line_is_black) {
-}
-
-void Car::set_move_time(int16_t time, bool drive_forward) {
-    current_movement = {
-            .action = Action::MOVE_TIME,
-            .time_initialized = millis(),
-            .move_forward = drive_forward,
-            .move_time = time,
-            .move_distance = 0,
-            .move_degrees = 0,
-            .move_radius = 0
-    };
-}
-
-void Car::set_move_distance(int16_t distance, bool drive_forward) {
-    current_movement = {
-            .action = Action::MOVE_DISTANCE,
-            .time_initialized = millis(),
-            .move_forward = drive_forward,
-            .move_time = 0,
-            .move_distance = distance,
-            .move_degrees = 0,
-            .move_radius = 0
-    };
-}
-
-void Car::set_turn_degrees(int32_t degrees) {
-    current_movement = {
-            .action = Action::TURN_DEGREES,
-            .time_initialized = millis(),
-            .move_forward = false,
-            .move_time = 0,
-            .move_distance = 0,
-            .move_degrees = degrees * imu.gyro.turn_1,
-            .move_radius = 0,
-    };
-
-    if (!turn_sensor_setup) {
-        imu.gyro.setup();
-        turn_sensor_setup = true;
-    }
-
-    imu.gyro.reset();
-}
-
-void Car::set_turn_with_radius(int16_t radius, int32_t degrees) {
-    current_movement = {
-            .action = Action::TURN_WITH_RADIUS,
-            .time_initialized = millis(),
-            .move_forward = false,
-            .move_time = 0,
-            .move_distance = 0,
-            .move_degrees = degrees * imu.gyro.turn_1,
-            .move_radius = radius,
-    };
-
-    if (!turn_sensor_setup) {
-        imu.gyro.setup();
-        turn_sensor_setup = true;
-    }
-
-    imu.gyro.reset();
-}
-
-void Car::set_follow_line(bool line_is_black) {
-}

@@ -12,6 +12,12 @@ struct Vector_3 {
     T y;
     T z;
 
+    Vector_3(T x = 0, T y = 0, T z = 0) {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
+
     void reset() {
         x = decltype(x)(0); // reinitialize the variable x to the value 0 with the same type
         y = decltype(y)(0); // int x = (int) 0
@@ -30,6 +36,42 @@ struct Vector_3 {
         x -= rhs.x;
         y -= rhs.y;
         z -= rhs.z;
+    }
+
+    template<typename U>
+    Vector_3<T> operator*=(Vector_3<U> rhs) {
+        x *= rhs.x;
+        y *= rhs.y;
+        z *= rhs.z;
+
+        return *this;
+    }
+
+    template<typename U>
+    Vector_3<T> operator+=(U rhs) {
+        x += rhs;
+        y += rhs;
+        z += rhs;
+
+        return *this;
+    }
+
+    template<typename U>
+    Vector_3<T> operator-=(U rhs) {
+        x -= rhs;
+        y -= rhs;
+        z -= rhs;
+
+        return *this;
+    }
+
+    template<typename U>
+    Vector_3<T> operator*=(U rhs) {
+        x *= rhs;
+        y *= rhs;
+        z *= rhs;
+
+        return *this;
     }
 };
 

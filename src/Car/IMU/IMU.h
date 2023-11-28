@@ -11,12 +11,16 @@ class IMU {
 public:
     Zumo32U4IMU imu;
 
-    Accelerometer acc = Accelerometer(imu);
+    Accelerometer acc = Accelerometer(&imu);
     Gyroscope gyro = Gyroscope(&imu);
 
     IMU() = default;
     void setup();
     void update();
+
+    void calculate_speed();
+    void calculate_position();
+    void calculate_angle();
 };
 
 #endif //ZUMO_ROBOT_IMU_H

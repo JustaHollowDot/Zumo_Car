@@ -9,21 +9,22 @@
 
 class Accelerometer {
 public:
-    Zumo32U4IMU imu_a;
+    Zumo32U4IMU *imu_a;
 
-    Vector_3<AverageData<int32_t>> acceleration = Vector_3<AverageData<int32_t>>();
+    Vector_3<int16_t> acceleration = Vector_3<int16_t>();
     Vector_3<int32_t> speed = Vector_3<int32_t>();
     Vector_3<int32_t> position = Vector_3<int32_t>();
 
-    int32_t acc_offset[3] = {0};
+    Vector_3<int16_t> acc_offset = Vector_3<int16_t>();
     uint32_t last_update;
 
-    explicit Accelerometer(Zumo32U4IMU imu);
+    explicit Accelerometer(Zumo32U4IMU *imu);
+    void setup();
     void reset();
-    void update();
-    void get_acceleration();
-    void calculate_speed();
-    void calculate_position();
+    void update(Vector_3<double> angle);
+    void get_acceleration(Vector_3<double> angle);
+    void calculate_speed(Vector_3<double> angle);
+    void calculate_position(Vector_3<double> angle);
 };
 
 #endif //ZUMO_ROBOT_POSITIONALDATA_H
