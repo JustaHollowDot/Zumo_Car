@@ -4,9 +4,6 @@
 #include "Car/Car.h"
 
 Zumo32U4ButtonA buttonA;
-Zumo32U4OLEDCore oledCore;
-Zumo32U4OLED oled;
-
 Car car;
 
 void setup() {
@@ -15,18 +12,17 @@ void setup() {
     car.setup();
     ledGreen(true);
 
-    buttonA.waitForButton();
-    delay(500);
+    // buttonA.waitForButton();
+    // delay(500);
+
+    ledGreen(false);
 
     car.setup_line_follower();
+
+    ledRed(true);
 }
 
 void loop() {
     car.update();
     car.follow_line();
-    ledGreen(false);
-
-    Serial.println(car.lineSensor.distance_from_center);
-    Serial.println();
-
 }

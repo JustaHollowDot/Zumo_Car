@@ -13,15 +13,19 @@ public:
     float KI;
 
     float last_value = 0;
-    AverageData<float, 3> average_difference;
-    AverageData<float, 3> average_integral;
+    AverageData<float, 5> average_difference;
+    AverageData<float, 5> average_integral;
 
-
-    PID_controller(float kp, float kd = 0, float ki = 0) {
+    explicit PID_controller(float kp, float kd = 0, float ki = 0) {
         KP = kp;
         KD = kd;
         KI = ki;
-    };
+    }
+
+    void reset() {
+        average_difference.reset();
+        average_integral.reset();
+    }
 
     float get_pid_value(float value) {
         average_difference = value - last_value;

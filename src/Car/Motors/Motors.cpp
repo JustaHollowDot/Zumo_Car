@@ -1,4 +1,7 @@
 #include "Motors.h"
+#include "util/PID_controller/PID_controller.h"
+
+PID_controller pid_controller = PID_controller(50, 50, 1);
 
 template<typename T>
 void swap(T& a, T& b);
@@ -17,6 +20,10 @@ void Motors::update() {
 
 void Motors::update_movement() {
     switch (current_movement.action) {
+        case Action::MOVE:
+            move(current_movement.left_speed, current_movement.right_speed, current_movement.move_forward);
+            break;
+
         case Action::MOVE_TIME:
             move_time();
             break;
@@ -90,34 +97,45 @@ void Motors::stop_movement() {
 
 void Motors::move_time() {
     if (!current_movement.initialized_movement) {
+        pid_controller.reset();
         move(max_speed, max_speed, !current_movement.move_forward);
 
         current_movement.time_initialized = millis();
         current_movement.initialized_movement = true;
     }
 
-    if (current_movement.time_initialized < millis() - 1000) {
+    int16_t new_speed = max_speed / 2 + pid_controller.get_pid_value(millis() - current_movement.move_time);
+    new_speed = constrain(new_speed, 0, 400);
+
+    move(new_speed, new_speed, !current_movement.move_forward);
+
+    if (current_movement.time_initialized < millis() - current_movement.move_time) {
         stop_movement();
     }
 }
 
 void Motors::move_distance() {
     if (!current_movement.initialized_movement) {
-        move(max_speed, max_speed, !current_movement.move_forward);
+        pid_controller.reset();
 
         current_movement.time_initialized = millis();
         current_movement.initialized_movement = true;
     }
+
+    int16_t new_speed = max_speed / 2 + pid_controller.get_pid_value(distance);
+    new_speed = constrain(new_speed, 0, 400);
+
+    move(new_speed, new_speed, current_movement.move_forward);
 
     if (current_movement.move_distance >= distance) {
         stop_movement();
     }
 }
 
+
 void Motors::turn_degrees() {
     if (!current_movement.initialized_movement) {
-        bool turn_right = current_movement.move_degrees > 0;
-        move(-max_speed, max_speed, turn_right);
+        pid_controller.reset();
 
         current_movement.time_initialized = millis();
         current_movement.initialized_movement = true;
@@ -125,14 +143,8 @@ void Motors::turn_degrees() {
 
     bool turn_right = current_movement.move_degrees > 0;
     float remaining_degrees = current_movement.move_degrees - turn_angle;
-    float change_degrees = turn_angle - prev_turn_angle;
 
-    const float KP = 10.0;
-    const float KD = 1500.0;
-    // int16_t speed_difference = KD * change_degrees - KP * remaining_degrees;
-    // int16_t new_speed = max_speed - speed_difference;
-    uint16_t new_speed = KP * remaining_degrees + KD * change_degrees;
-
+    int16_t new_speed = pid_controller.get_pid_value(remaining_degrees);
     new_speed = constrain(new_speed, 0, 400);
 
     move(-new_speed, new_speed, turn_right);
@@ -158,7 +170,7 @@ void Motors::turn_with_radius() {
         }
 
         float diff_r = radius_right ? 0 : radius_left / radius_right; // Safeguard against division by 0
-        int16_t new_left_speed = ((int16_t)max_speed) * diff_r;
+        int16_t new_left_speed = (int16_t)((float)max_speed * diff_r);
         int16_t new_right_speed = max_speed;
 
         bool move_right = signbit(current_movement.move_radius);
@@ -171,6 +183,11 @@ void Motors::turn_with_radius() {
         current_movement.time_initialized = millis();
         current_movement.initialized_movement = true;
     }
+
+    int16_t new_speed = max_speed / 2 + pid_controller.get_pid_value(distance);
+    new_speed = constrain(new_speed, 0, 400);
+
+    move(new_speed, new_speed, current_movement.move_forward);
 
     if (current_movement.move_radius < 0) {
         if (turn_angle <= current_movement.move_degrees) {

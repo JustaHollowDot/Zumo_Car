@@ -6,6 +6,7 @@
 #include <Zumo32U4.h>
 
 enum class Action {
+    MOVE,
     MOVE_TIME,
     MOVE_DISTANCE,
     TURN_DEGREES,
@@ -18,14 +19,19 @@ struct Movement {
     Action action;
     uint32_t time_initialized;
 
-    // Combines the three variables into one memory location as at most one is used at a time
+    // Combines the four variables into one memory location as at most one is used at a time
     union {
+        int32_t left_speed;
         int32_t move_time;
         int32_t move_distance;
         int32_t move_degrees;
     };
 
-    int16_t move_radius;
+    union {
+        int16_t right_speed;
+        int16_t move_radius;
+    };
+
     bool move_forward;
     bool initialized_movement;
 
@@ -34,6 +40,7 @@ struct Movement {
 class Movement_creator {
 public:
     static Movement no_move();
+    static Movement move(int16_t left_speed, int16_t right_speed, bool drive_forward = true);
     static Movement move_time(int16_t time, bool drive_forward = true);
     static Movement move_distance(int16_t distance, bool drive_forward = true);
     static Movement turn_degrees(int32_t degrees, bool drive_forward = true);

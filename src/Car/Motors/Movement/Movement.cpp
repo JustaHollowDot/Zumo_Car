@@ -12,6 +12,18 @@ Movement Movement_creator::no_move() {
     return temp;
 }
 
+Movement Movement_creator::move(int16_t left_speed, int16_t right_speed, bool drive_forward) {
+    Movement temp;      // temp created as 'return Movement { ... }' does not work properly due to union field.
+    temp.action = Action::MOVE;
+    temp.time_initialized = 0;
+    temp.left_speed = left_speed;
+    temp.right_speed = right_speed;
+    temp.move_forward = drive_forward;
+    temp.initialized_movement = false;
+
+    return temp;
+}
+
 Movement Movement_creator::move_time(int16_t time, bool drive_forward) {
     Movement temp;      // temp created as 'return Movement { ... }' does not work properly due to union field.
     temp.action = Action::MOVE_TIME;

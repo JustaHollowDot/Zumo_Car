@@ -12,9 +12,9 @@ private:
     Zumo32U4LineSensors lineSensors;
 
 public:
-    uint16_t line_sensor_values[NUM_SENSORS];
-    int16_t distance_from_center;
-    int16_t last_distance_from_center;
+    uint16_t line_sensor_values[NUM_SENSORS] = {0};
+    int16_t distance_from_center = 0;
+    int16_t last_distance_from_center = 0;
 
     LineSensor() = default;
 
