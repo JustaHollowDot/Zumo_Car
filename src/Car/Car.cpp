@@ -5,7 +5,7 @@
 #include "util/PID_controller/PID_controller.h"
 
 constexpr float max_distance_from_center = 2000;
-PID_controller pidController = PID_controller(0.4, 5, 0.2);
+PID_controller pidController = PID_controller(1.0 / 3.0, 8.0, 0);
 
 void Car::setup() {
     lineSensor.init();
@@ -18,6 +18,10 @@ void Car::update() {
     imu.update();
     motors.set_turn_angle(imu.gyro.turn_angle.z);
     motors.update();
+}
+
+void Car::display_standard() {
+
 }
 
 
@@ -37,6 +41,11 @@ void Car::setup_line_follower() {
 
 void Car::follow_line() {
     int16_t speed_difference = pidController.get_pid_value(lineSensor.distance_from_center);
+    int16_t left_speed = motors.max_speed + speed_difference;
+    int16_t right_speed = motors.max_speed - speed_difference;
+
+    /*
+    int16_t speed_difference = pidController.get_pid_value(lineSensor.distance_from_center);
     int16_t left_speed;
     int16_t right_speed;
 
@@ -47,6 +56,7 @@ void Car::follow_line() {
         left_speed = motors.max_speed;
         right_speed = motors.max_speed - abs(speed_difference);
     }
+    */
 
     left_speed = constrain(left_speed, 0, (int16_t)motors.max_speed);
     right_speed = constrain(right_speed, 0, (int16_t)motors.max_speed);
@@ -68,3 +78,4 @@ void Car::follow_line() {
     motors.set_movement(Movement_creator::turn_with_radius(turn_radius, imu.gyro.turn_angle.z + 360, false));
     */
 }
+

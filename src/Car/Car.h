@@ -15,9 +15,8 @@ public:
     Motors motors;
     IMU imu;
     LineSensor lineSensor;
-    Display<int16_t, String> display;
+    Display<String, String> display;
     Battery battery;
-
 
     static constexpr uint16_t CAR_WIDTH = 98;
     static constexpr uint16_t CAR_LENGTH = 98;

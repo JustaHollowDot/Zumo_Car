@@ -15,6 +15,7 @@ void Motors::update() {
     get_speed_and_position();
     get_drive_direction();
     update_movement();
+    get_rotation();
     last_update = millis();
 }
 
@@ -57,14 +58,21 @@ void Motors::set_movement(Movement new_movement) {
 void Motors::get_speed_and_position() {
     uint32_t time_diff = millis() - last_update;
 
-    left_speed = encoder.left_rotations * circumference;
-    right_speed = encoder.right_rotations * circumference;
+    left_speed = encoder.left_rotations * circumference * time_diff / 1000.0;
+    right_speed = encoder.right_rotations * circumference * time_diff / 1000.0;
 
-    left_distance += left_speed * time_diff / 1000.0;
-    right_distance += right_speed * time_diff / 1000.0;
+    left_distance += encoder.left_rotations * circumference;
+    right_distance += encoder.right_rotations * circumference;
 
-    distance = (left_distance + right_distance) / 2;
-    speed = (left_speed + right_speed) / 2;
+    float added_distance = (left_distance + right_distance) / 2.0;
+    distance += added_distance;
+    distance_xy.x += added_distance * cos(rotations_degrees);
+    distance_xy.y += added_distance * sin(rotations_degrees);
+
+    float new_speed = (left_speed + right_speed) / 2.0;
+    speed = new_speed;
+    speed_xy.x = new_speed * cos(rotations_degrees);
+    speed_xy.y = new_speed * sin(rotations_degrees);
 }
 
 void Motors::get_drive_direction() {
@@ -75,6 +83,15 @@ void Motors::get_drive_direction() {
     } else {
         direction = MovementDirection::STATIONARY;
     }
+}
+
+void Motors::get_rotation() {
+    constexpr uint8_t car_width = 98;
+    constexpr float circle_circumference = PI * car_width * 2; // Get circumference from circle where only one track moves.
+
+    float distance_difference = left_distance - right_distance;
+
+    rotations_degrees = distance_difference / circle_circumference * 360;
 }
 
 void Motors::move(int16_t left_motor_speed, int16_t right_motor_speed, bool negate_speeds = false) {

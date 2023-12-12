@@ -33,12 +33,16 @@ public:
     Movement current_movement = Movement_creator::no_move();
     MovementDirection direction = MovementDirection::STATIONARY;
     float distance = 0;
+    Vector_2<float> distance_xy;
     float speed = 0;
+    Vector_2<float> speed_xy;
     uint16_t max_speed = 400;
+    float rotations_degrees = 0;
 
 private:
     void get_speed_and_position();
     void get_drive_direction();
+    void get_rotation();
 
     void update_movement();
     void move(int16_t left_speed, int16_t right_speed, bool flip_speeds);

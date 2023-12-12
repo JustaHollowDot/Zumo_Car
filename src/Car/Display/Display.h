@@ -11,6 +11,8 @@ class Display {
 private:
     Zumo32U4OLED display;
 
+    static constexpr uint8_t messages_amount = 7;
+
 public:
     String messages[3];
 
@@ -22,6 +24,10 @@ public:
     String lower_menu_suffix[4];
 
     Display() = default;
+
+    void setup() {
+        display.setLayout21x8();
+    }
 
     void standard() {
 
@@ -49,6 +55,22 @@ public:
         display.print(messages[2]);
     }
 
+    void update_header() {
+        display.gotoXY(0, 0);
+        display.print("-MESSAGES----");
+    }
+
+    void add_message(const String& message) {
+        display.noAutoDisplay();
+        display.scrollDisplayUp();
+        display.gotoXY(0, messages_amount);
+        display.print(message);
+
+        update_header();
+        update_side_menu();
+        display.display();
+    }
+
     void update_side_menu() {
         for (int i = 0; i < 3; i++) {
             display_line(14, i, upper_menu_key[i], upper_menu_values[i], upper_menu_suffix[i]);
@@ -62,7 +84,7 @@ public:
         }
     }
 
-    void display_line(uint8_t x, uint8_t y, String name, T value, String suffix) {
+    void display_line(uint8_t x, uint8_t y, const String& name, const T& value, const String& suffix) {
         display.gotoXY(x, y);
         display.print("|");
         display.print(name);
@@ -71,17 +93,19 @@ public:
         display.print(suffix);
     }
 
-    void set_upper_menu_items(String new_names[3], T new_values[3]) {
+    void set_upper_menu_items(String new_names[3], T new_values[3], String new_suffixes[3]) {
         for (int i = 0; i < 3; i++) {
             upper_menu_key[i] = new_names[i];
             upper_menu_values[i] = new_values[i];
+            upper_menu_suffix[i] = new_suffixes[i];
         }
     }
 
-    void set_lower_menu_items(String new_names[4], U new_values[4]) {
+    void set_lower_menu_items(String new_names[4], U new_values[4], String new_suffixes[4]) {
         for (int i = 0; i < 4; i++) {
             lower_menu_key[i] = new_names[i];
             lower_menu_values[i] = new_values[i];
+            lower_menu_suffix[i] = new_suffixes[i];
         }
     }
 };
