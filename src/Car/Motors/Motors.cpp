@@ -1,7 +1,8 @@
 #include "Motors.h"
+#include "util/Vector/Vector.h"
 #include "util/PID_controller/PID_controller.h"
 
-PID_controller pid_controller = PID_controller(50, 50, 1);
+PID_controller pid_controller = PID_controller(10, 10, 1);
 
 template<typename T>
 void swap(T& a, T& b);
@@ -58,14 +59,18 @@ void Motors::set_movement(Movement new_movement) {
 void Motors::get_speed_and_position() {
     uint32_t time_diff = millis() - last_update;
 
+    float prev_distance = distance;
+
     left_speed = encoder.left_rotations * circumference * time_diff / 1000.0;
     right_speed = encoder.right_rotations * circumference * time_diff / 1000.0;
 
     left_distance += encoder.left_rotations * circumference;
     right_distance += encoder.right_rotations * circumference;
 
-    float added_distance = (left_distance + right_distance) / 2.0;
-    distance += added_distance;
+    float new_distance = (left_distance + right_distance) / 2.0;
+    distance = new_distance;
+
+    float added_distance = new_distance - prev_distance;
     distance_xy.x += added_distance * cos(rotations_degrees);
     distance_xy.y += added_distance * sin(rotations_degrees);
 
@@ -139,12 +144,12 @@ void Motors::move_distance() {
         current_movement.initialized_movement = true;
     }
 
-    int16_t new_speed = max_speed / 2 + pid_controller.get_pid_value(distance);
-    new_speed = constrain(new_speed, 0, 400);
+    int16_t new_speed = max_speed; // / 2 + pid_controller.get_pid_value(distance);
+    // new_speed = constrain(new_speed, 0, 400);
 
     move(new_speed, new_speed, current_movement.move_forward);
 
-    if (current_movement.move_distance >= distance) {
+    if (current_movement.move_distance <= distance) {
         stop_movement();
     }
 }
@@ -182,11 +187,11 @@ void Motors::turn_with_radius() {
         float radius_left = current_movement.move_radius - 49;
         float radius_right = current_movement.move_radius + 49;
 
-        if (radius_right < radius_left) {
+        if (abs(radius_right) < abs(radius_left)) {
             swap(radius_left, radius_right);
         }
 
-        float diff_r = radius_right ? 0 : radius_left / radius_right; // Safeguard against division by 0
+        float diff_r = radius_right == 0 ? 0 : radius_left / radius_right; // Safeguard against division by 0
         int16_t new_left_speed = (int16_t)((float)max_speed * diff_r);
         int16_t new_right_speed = max_speed;
 
@@ -195,16 +200,16 @@ void Motors::turn_with_radius() {
             swap(new_left_speed, new_right_speed);
         }
 
-        move(new_left_speed, new_right_speed, !current_movement.move_forward);
+        move(new_left_speed, new_right_speed, current_movement.move_forward);
 
         current_movement.time_initialized = millis();
         current_movement.initialized_movement = true;
     }
 
-    int16_t new_speed = max_speed / 2 + pid_controller.get_pid_value(distance);
-    new_speed = constrain(new_speed, 0, 400);
+    // int16_t new_speed = max_speed / 2 + pid_controller.get_pid_value(distance);
+    // new_speed = constrain(new_speed, 0, 400);
 
-    move(new_speed, new_speed, current_movement.move_forward);
+    // move(new_speed, new_speed, current_movement.move_forward);
 
     if (current_movement.move_radius < 0) {
         if (turn_angle <= current_movement.move_degrees) {

@@ -18,8 +18,7 @@ public:
     uint16_t line_sensor_values[NUM_SENSORS] = {0};
     int16_t distance_from_center = 0;
     int16_t last_distance_from_center = 0;
-    bool line_to_left = false;
-    bool line_to_right = false;
+    bool line_missing = false;
     bool line_under_middle = false;
     bool is_at_intersection = false;
 

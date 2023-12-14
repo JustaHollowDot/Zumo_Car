@@ -3,48 +3,65 @@
 #include <Zumo32U4.h>
 #include "Car/Car.h"
 #include "Car_Actions/LineFollower/LineFollower.h"
+#include "Car_Actions/SimpleMovements/SimpleMovements.h"
 
-Zumo32U4ButtonA buttonA;
 Car car;
+LineFollower line_follower(&car);
+SimpleMovements simple_movements(&car);
 
-Zumo32U4OLED display;
+enum CarAction {
+    LINEFOLLOWER,
+    SIMPLEMOVEMENTS,
+    OTHER
+};
+
+CarAction action = CarAction::LINEFOLLOWER;
 
 void setup() {
     Serial.begin(9600);
 
     car.setup();
-    car.motors.set_movement(Movement_creator::turn_degrees(90));
-
-    /*
-    ledGreen(true);
-
-    // buttonA.waitForButton();
-    // delay(500);
-
-    car.display.setup();
-
-    String names[3] = {"A", "B", "C"};
-    String values[3] = {"test", "kake", "mer"};
-    String suffixes[3] = {"", "", ""};
-    car.display.set_upper_menu_items(names, values, suffixes);
-
-    String names2[4] = {"A", "B", "C", "D"};
-    String values2[4] = {"test", "kake", "mer", "noe"};
-    String suffixes2[4] = {"", "", "", ""};
-    car.display.set_lower_menu_items(names2, values2, suffixes2);
-     */
 
 
-    // car.setup_line_follower();
+    if (action == CarAction::LINEFOLLOWER) {
+        line_follower.setup();
+
+        ledGreen(true);
+
+        line_follower.explore_maze();
+    }
+
+    if (action == CarAction::SIMPLEMOVEMENTS) {
+        simple_movements.drive_rectangle();
+        ledGreen(true);
+
+        simple_movements.drive_circle();
+        ledRed(true);
+
+        simple_movements.drive_forward_and_back();
+        ledYellow(true);
+
+        simple_movements.drive_between_obstacles(100, 5);
+        ledGreen(false);
+    }
+
+    // car.motors.set_movement(Movement_creator::turn_degrees(90));
 }
 
 void loop() {
-    // car.update();
-    // car.follow_line();
+    if (action == CarAction::LINEFOLLOWER) {
+        line_follower.drive_loop();
+    }
 
-    // car.display.add_message("test display");
-    // delay(1000);
+    if (action == CarAction::OTHER) {
+        car.update();
 
-    car.update();
-    Serial.println(car.motors.rotations);
+        // car.follow_line();
+
+        // car.display.add_message("test display");
+        // delay(1000);
+
+        // car.update();
+        // Serial.println(car.motors.rotations);
+    }
 }

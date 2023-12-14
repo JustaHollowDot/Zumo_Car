@@ -6,7 +6,7 @@
 #include <Zumo32U4.h>
 #include "util/AverageData/AverageData.h"
 
-template< typename T>
+template<typename T>
 struct Vector_2 {
     T x;
     T y;
