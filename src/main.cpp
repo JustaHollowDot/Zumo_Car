@@ -15,7 +15,7 @@ enum CarAction {
     OTHER
 };
 
-CarAction action = CarAction::LINEFOLLOWER;
+CarAction action = CarAction::SIMPLEMOVEMENTS;
 
 void setup() {
     Serial.begin(9600);
