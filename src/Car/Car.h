@@ -6,7 +6,7 @@
 #include <Zumo32U4.h>
 #include "IMU/IMU.h"
 #include "Motors/Motors.h"
-#include "SensorArray/LineSensor/LineSensor.h"
+#include "LineSensor/LineSensor.h"
 #include "Display/Display.h"
 #include "Battery/Battery.h"
 
@@ -15,7 +15,7 @@ public:
     Motors motors;
     IMU imu;
     LineSensor lineSensor;
-    Display<String, String> display;
+    Display display;
     Battery battery;
 
     static constexpr uint16_t CAR_WIDTH = 98;
@@ -25,10 +25,5 @@ public:
     Car() = default;
     void setup();
     void update();
-
-    void display_standard();
-
-    void setup_line_follower();
-    void follow_line();
 };
 #endif

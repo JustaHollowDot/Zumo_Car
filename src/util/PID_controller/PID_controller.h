@@ -13,13 +13,8 @@ public:
     float KI;
 
     float last_value = 0;
-    float average_difference = 0;
-    float average_integral = 0;
-
-    /*
     AverageData<float, 5> average_difference;
     AverageData<float, 5> average_integral;
-     */
 
     explicit PID_controller(float kp, float kd = 0, float ki = 0) {
         KP = kp;
@@ -28,13 +23,8 @@ public:
     }
 
     void reset() {
-        average_difference = 0;
-        average_integral = 0;
-
-        /*
         average_difference.reset();
         average_integral.reset();
-         */
     }
 
     float get_pid_value(float value) {

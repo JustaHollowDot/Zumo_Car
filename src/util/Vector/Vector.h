@@ -18,7 +18,7 @@ struct Vector_2 {
 
     void reset() {
         x = decltype(x)(0); // reinitialize the variable x to the value 0 with the same type
-        y = decltype(y)(0); // int x = (int) 0
+        y = decltype(y)(0); // int x = (int) 0; AverageData<T> x = (AverageData<T>) 0
     }
 
     template<typename U>

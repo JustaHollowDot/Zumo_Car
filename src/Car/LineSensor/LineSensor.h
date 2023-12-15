@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <Zumo32U4.h>
+#include "Zumo32U4.h"
 
 constexpr int8_t NUM_SENSORS = 5;
 
